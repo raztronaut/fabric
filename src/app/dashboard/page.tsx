@@ -49,6 +49,22 @@ const OUTPUT_FORMATS = {
   }
 }
 
+const CONTENT_LIMITS = {
+  url: {
+    maxLength: "Articles should be under 10,000 words",
+    tip: "Best for blog posts, news articles, and medium-length content"
+  },
+  youtube: {
+    maxLength: "Videos should be under 30 minutes",
+    tip: "Works best with videos that have good quality auto-generated captions",
+    error: "Could not process this video. This might be because:\n- The video is too long\n- The video doesn't have English captions\n- The video is private or age-restricted"
+  },
+  text: {
+    maxLength: "Text should be under 5,000 words",
+    tip: "For best results, ensure the text is well-formatted and in English"
+  }
+}
+
 export default function Dashboard() {
   const router = useRouter()
   const { user, loading } = useAuth()
@@ -118,6 +134,27 @@ export default function Dashboard() {
       return
     }
 
+    if (contentType === 'text' && content.split(/\s+/).length > 5000) {
+      toast({
+        variant: "destructive",
+        title: "Content too long",
+        description: "Please enter text under 5,000 words",
+      })
+      return
+    }
+
+    if (contentType === 'youtube') {
+      const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/
+      if (!youtubeRegex.test(content)) {
+        toast({
+          variant: "destructive",
+          title: "Invalid YouTube URL",
+          description: "Please enter a valid YouTube video URL",
+        })
+        return
+      }
+    }
+
     setIsLoading(true)
     setSummary("")
 
@@ -137,6 +174,9 @@ export default function Dashboard() {
       const data = await response.json()
 
       if (!response.ok) {
+        if (contentType === 'youtube' && data.error?.includes('transcription')) {
+          throw new Error(CONTENT_LIMITS.youtube.error)
+        }
         throw new Error(data.error || "Failed to generate summary")
       }
 
@@ -221,34 +261,55 @@ export default function Dashboard() {
                   <TabsContent value="url" className="mt-0">
                     <div className="space-y-2">
                       <p className="text-sm text-gray-600 dark:text-gray-400">Paste the URL of any web article or blog post</p>
-                      <Textarea
-                        placeholder="https://example.com/article"
-                        value={content}
-                        onChange={(e) => setContent(e.target.value)}
-                        className="h-24 dark:bg-gray-800/50 dark:border-gray-700"
-                      />
+                      <div className="space-y-3">
+                        <Textarea
+                          placeholder="https://example.com/article"
+                          value={content}
+                          onChange={(e) => setContent(e.target.value)}
+                          className="h-24 dark:bg-gray-800/50 dark:border-gray-700"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          <span className="font-medium">Limit:</span> {CONTENT_LIMITS.url.maxLength}
+                          <br />
+                          <span className="font-medium">Tip:</span> {CONTENT_LIMITS.url.tip}
+                        </p>
+                      </div>
                     </div>
                   </TabsContent>
                   <TabsContent value="youtube" className="mt-0">
                     <div className="space-y-2">
                       <p className="text-sm text-gray-600 dark:text-gray-400">Paste a YouTube video URL</p>
-                      <Textarea
-                        placeholder="https://youtube.com/watch?v=..."
-                        value={content}
-                        onChange={(e) => setContent(e.target.value)}
-                        className="h-24 dark:bg-gray-800/50 dark:border-gray-700"
-                      />
+                      <div className="space-y-3">
+                        <Textarea
+                          placeholder="https://youtube.com/watch?v=..."
+                          value={content}
+                          onChange={(e) => setContent(e.target.value)}
+                          className="h-24 dark:bg-gray-800/50 dark:border-gray-700"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          <span className="font-medium">Limit:</span> {CONTENT_LIMITS.youtube.maxLength}
+                          <br />
+                          <span className="font-medium">Tip:</span> {CONTENT_LIMITS.youtube.tip}
+                        </p>
+                      </div>
                     </div>
                   </TabsContent>
                   <TabsContent value="text" className="mt-0">
                     <div className="space-y-2">
                       <p className="text-sm text-gray-600 dark:text-gray-400">Paste or type any text content</p>
-                      <Textarea
-                        placeholder="Enter your text here..."
-                        value={content}
-                        onChange={(e) => setContent(e.target.value)}
-                        className="min-h-[200px] dark:bg-gray-800/50 dark:border-gray-700"
-                      />
+                      <div className="space-y-3">
+                        <Textarea
+                          placeholder="Enter your text here..."
+                          value={content}
+                          onChange={(e) => setContent(e.target.value)}
+                          className="min-h-[200px] dark:bg-gray-800/50 dark:border-gray-700"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          <span className="font-medium">Limit:</span> {CONTENT_LIMITS.text.maxLength}
+                          <br />
+                          <span className="font-medium">Tip:</span> {CONTENT_LIMITS.text.tip}
+                        </p>
+                      </div>
                     </div>
                   </TabsContent>
                 </Tabs>
