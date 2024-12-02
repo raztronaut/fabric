@@ -1,119 +1,47 @@
 "use client"
 
-import { createContext, useContext, useEffect, useState } from 'react'
-import { User } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabase'
-import { useToast } from '@/hooks/use-toast'
+import { createContext, useContext, useEffect, useState } from "react"
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+import type { User } from "@supabase/auth-helpers-nextjs"
 
 type AuthContextType = {
   user: User | null
   loading: boolean
-  signUp: (email: string, password: string) => Promise<void>
-  signIn: (email: string, password: string) => Promise<void>
-  signOut: () => Promise<void>
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  loading: true,
+})
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  const { toast } = useToast()
+  const supabase = createClientComponentClient()
 
   useEffect(() => {
-    // Check active sessions and sets the user
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const getUser = async () => {
+      const { data: { session }, error } = await supabase.auth.getSession()
       setUser(session?.user ?? null)
       setLoading(false)
-    })
 
-    // Listen for changes on auth state (logged in, signed out, etc.)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        (_event, session) => {
+          setUser(session?.user ?? null)
+          setLoading(false)
+        }
+      )
 
-    return () => subscription.unsubscribe()
-  }, [])
-
-  const signUp = async (email: string, password: string) => {
-    try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-      })
-
-      if (error) throw error
-
-      toast({
-        title: "Success!",
-        description: "Please check your email to verify your account.",
-        variant: "success",
-      })
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to sign up",
-        variant: "destructive",
-      })
-      throw error
+      return () => {
+        subscription.unsubscribe()
+      }
     }
-  }
 
-  const signIn = async (email: string, password: string) => {
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-
-      if (error) throw error
-
-      toast({
-        title: "Welcome back!",
-        description: "Successfully signed in.",
-        variant: "success",
-      })
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to sign in",
-        variant: "destructive",
-      })
-      throw error
-    }
-  }
-
-  const signOut = async () => {
-    try {
-      const { error } = await supabase.auth.signOut()
-      if (error) throw error
-
-      toast({
-        title: "Signed out",
-        description: "Successfully signed out.",
-        variant: "success",
-      })
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to sign out",
-        variant: "destructive",
-      })
-      throw error
-    }
-  }
-
-  const value = {
-    user,
-    loading,
-    signUp,
-    signIn,
-    signOut,
-  }
+    getUser()
+  }, [supabase.auth])
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{ user, loading }}>
       {children}
     </AuthContext.Provider>
   )
@@ -122,7 +50,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 export const useAuth = () => {
   const context = useContext(AuthContext)
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider')
+    throw new Error("useAuth must be used within an AuthProvider")
   }
   return context
 } 

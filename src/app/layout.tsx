@@ -1,15 +1,14 @@
-import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/contexts/auth-context";
+import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
-export const metadata: Metadata = {
-  title: "Distill | AI-Powered Content Intelligence",
-  description: "Transform lengthy content into clear, actionable insights. From articles to videos, get to the essence in seconds.",
+export const metadata = {
+  title: "Distill",
+  description: "Transform lengthy content into clear, actionable insights",
 };
 
 export default function RootLayout({
@@ -18,13 +17,11 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="antialiased" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider>
           <AuthProvider>
-            <main className="min-h-screen">
-              {children}
-            </main>
+            {children}
             <Toaster />
           </AuthProvider>
         </ThemeProvider>
