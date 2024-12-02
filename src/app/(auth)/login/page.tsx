@@ -27,7 +27,7 @@ export default function LoginPage() {
     try {
       setIsLoading(true);
       await signIn(formData.email, formData.password);
-      router.push("/");
+      router.push("/dashboard");
     } catch (error) {
       setError(error instanceof Error ? error.message : "Invalid credentials");
     } finally {
