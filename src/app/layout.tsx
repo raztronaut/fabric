@@ -20,12 +20,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="antialiased" suppressHydrationWarning>
       <body className={inter.className}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange={false}
-        >
+        <ThemeProvider>
           <AuthProvider>
             <main className="min-h-screen">
               {children}
