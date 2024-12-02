@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
+import { AuthProvider } from "@/contexts/auth-context";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,10 +26,12 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange={false}
         >
-          <main className="min-h-screen">
-            {children}
-          </main>
-          <Toaster />
+          <AuthProvider>
+            <main className="min-h-screen">
+              {children}
+            </main>
+            <Toaster />
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
