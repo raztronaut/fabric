@@ -3,6 +3,12 @@ import OpenAI from "openai"
 import { YoutubeTranscript } from 'youtube-transcript'
 import { JSDOM } from 'jsdom'
 
+export const runtime = 'nodejs'
+
+if (!process.env.OPENAI_API_KEY) {
+  throw new Error('OPENAI_API_KEY environment variable is not set')
+}
+
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 })
