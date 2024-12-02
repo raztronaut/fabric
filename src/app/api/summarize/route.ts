@@ -41,14 +41,33 @@ async function fetchWebContent(url: string) {
     document.querySelectorAll('script, style').forEach(el => el.remove())
     
     // Get main content (prioritize article or main content)
-    const article = document.querySelector('article') || 
-                   document.querySelector('main') || 
-                   document.querySelector('.content') ||
-                   document.querySelector('.article') ||
-                   document.body
+    let mainContent: Element | null = null
     
-    return article.textContent.trim().replace(/\s+/g, ' ')
-  } catch {
+    // Try to find the main content in order of preference
+    const selectors = ['article', 'main', '.content', '.article']
+    for (const selector of selectors) {
+      mainContent = document.querySelector(selector)
+      if (mainContent) break
+    }
+    
+    // Fallback to body if no other content is found
+    mainContent = mainContent || document.body
+    
+    if (!mainContent) {
+      throw new Error('Could not find content in the webpage')
+    }
+    
+    // Extract and clean the text content
+    const textContent = mainContent.textContent
+    if (!textContent) {
+      throw new Error('No text content found in the webpage')
+    }
+    
+    return textContent.trim().replace(/\s+/g, ' ')
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error
+    }
     throw new Error('Failed to fetch web content')
   }
 }
