@@ -1,5 +1,0 @@
-@https://github.com/danielmiessler/fabric 
-
-Build a web app that uses Fabric's summarize pattern to create concise versions of articles, documents, and YouTube videos
-
-use @shadcn components.

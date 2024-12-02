@@ -9,6 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { Loader2, Copy, Check, Share2 } from "lucide-react"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 type ContentType = 'url' | 'youtube' | 'text'
 type OutputFormat = 'summary' | 'bullets' | 'takeaways' | 'tweet' | 'thread' | 'linkedin'
@@ -152,74 +153,84 @@ export default function Home() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
       {/* Background decoration */}
       <div className="absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute -top-1/2 right-0 h-96 w-96 rounded-full bg-purple-100/50 blur-3xl" />
-        <div className="absolute bottom-0 left-0 h-96 w-96 rounded-full bg-indigo-100/50 blur-3xl" />
+        <div className="absolute -top-1/2 right-0 h-96 w-96 rounded-full bg-purple-100/50 blur-3xl dark:bg-purple-900/10" />
+        <div className="absolute bottom-0 left-0 h-96 w-96 rounded-full bg-indigo-100/50 blur-3xl dark:bg-indigo-900/10" />
       </div>
 
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="absolute top-4 right-4">
+          <ThemeToggle />
+        </div>
+
         <div className="text-center mb-12">
           <div className="inline-block">
-            <h1 className="text-6xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 sm:text-7xl">
+            <h1 className="text-6xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 sm:text-7xl">
               Distill
             </h1>
-            <div className="h-1 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full mt-2" />
+            <div className="h-1 bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 rounded-full mt-2" />
           </div>
-          <p className="mt-6 text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="mt-6 text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
             Transform lengthy content into clear, actionable insights. From articles to videos, get to the essence in seconds.
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
           <div className="space-y-8">
-            <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+            <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm dark:bg-gray-900/90 dark:backdrop-blur-xl dark:border-gray-800">
               <CardHeader className="space-y-1 pb-4">
-                <CardTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+                <CardTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
                   Step 1: Choose Content Type
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="dark:text-gray-400">
                   Select how you want to input your content
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Tabs defaultValue="url" onValueChange={(value) => setContentType(value as ContentType)}>
-                  <TabsList className="grid grid-cols-3 mb-4">
-                    <TabsTrigger value="url">Web Article</TabsTrigger>
-                    <TabsTrigger value="youtube">YouTube Video</TabsTrigger>
-                    <TabsTrigger value="text">Direct Text</TabsTrigger>
+                <Tabs defaultValue="url" onValueChange={(value) => setContentType(value as ContentType)} className="dark:tabs">
+                  <TabsList className="grid grid-cols-3 mb-4 dark:bg-gray-800/50">
+                    <TabsTrigger value="url" className="dark:tab dark:data-[state=active]:bg-gray-900 dark:data-[state=active]:text-gray-100">
+                      Web Article
+                    </TabsTrigger>
+                    <TabsTrigger value="youtube" className="dark:tab dark:data-[state=active]:bg-gray-900 dark:data-[state=active]:text-gray-100">
+                      YouTube Video
+                    </TabsTrigger>
+                    <TabsTrigger value="text" className="dark:tab dark:data-[state=active]:bg-gray-900 dark:data-[state=active]:text-gray-100">
+                      Direct Text
+                    </TabsTrigger>
                   </TabsList>
                   <TabsContent value="url" className="mt-0">
                     <div className="space-y-2">
-                      <p className="text-sm text-gray-600">Paste the URL of any web article or blog post</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Paste the URL of any web article or blog post</p>
                       <Textarea
                         placeholder="https://example.com/article"
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
-                        className="h-24"
+                        className="h-24 dark:bg-gray-800/50 dark:border-gray-700"
                       />
                     </div>
                   </TabsContent>
                   <TabsContent value="youtube" className="mt-0">
                     <div className="space-y-2">
-                      <p className="text-sm text-gray-600">Paste a YouTube video URL</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Paste a YouTube video URL</p>
                       <Textarea
                         placeholder="https://youtube.com/watch?v=..."
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
-                        className="h-24"
+                        className="h-24 dark:bg-gray-800/50 dark:border-gray-700"
                       />
                     </div>
                   </TabsContent>
                   <TabsContent value="text" className="mt-0">
                     <div className="space-y-2">
-                      <p className="text-sm text-gray-600">Paste or type any text content</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Paste or type any text content</p>
                       <Textarea
                         placeholder="Enter your text here..."
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
-                        className="min-h-[200px]"
+                        className="min-h-[200px] dark:bg-gray-800/50 dark:border-gray-700"
                       />
                     </div>
                   </TabsContent>
@@ -227,12 +238,12 @@ export default function Home() {
               </CardContent>
             </Card>
 
-            <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+            <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm dark:bg-gray-900/90 dark:backdrop-blur-xl dark:border-gray-800">
               <CardHeader className="space-y-1 pb-4">
-                <CardTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+                <CardTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
                   Step 2: Choose Output Format
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="dark:text-gray-400">
                   Select how you want your content distilled
                 </CardDescription>
               </CardHeader>
@@ -245,31 +256,31 @@ export default function Home() {
                   {Object.entries(OUTPUT_FORMATS).map(([key, format]) => (
                     <Label
                       key={key}
-                      className={`flex items-center space-x-3 space-y-0 rounded-lg border p-4 hover:bg-gray-50 cursor-pointer ${
-                        outputFormat === key ? 'border-indigo-600 bg-indigo-50/50' : 'border-gray-200'
+                      className={`flex items-center space-x-3 space-y-0 rounded-lg border p-4 hover:bg-gray-50 cursor-pointer dark:hover:bg-gray-800/50 dark:border-gray-700 ${
+                        outputFormat === key ? 'border-indigo-600 bg-indigo-50/50 dark:border-indigo-500 dark:bg-gray-800/90' : 'border-gray-200 dark:border-gray-700'
                       }`}
                     >
                       <RadioGroupItem value={key} id={key} className="sr-only" />
                       <span className="text-xl">{format.icon}</span>
                       <div className="space-y-1">
-                        <p className="text-base font-medium leading-none">{format.label}</p>
-                        <p className="text-sm text-gray-500">{format.description}</p>
+                        <p className="text-base font-medium leading-none dark:text-gray-200">{format.label}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{format.description}</p>
                       </div>
                     </Label>
                   ))}
                 </RadioGroup>
               </CardContent>
-              <CardFooter className="flex justify-between items-center border-t bg-gradient-to-b from-white/50 to-gray-50/50 rounded-b-lg pt-6">
+              <CardFooter className="flex justify-between items-center border-t dark:border-gray-800 bg-gradient-to-b from-white/50 to-gray-50/50 dark:from-gray-900/50 dark:to-gray-800/50 rounded-b-lg pt-6">
                 <div className="flex items-center space-x-2">
-                  <div className={`h-2 w-2 rounded-full ${isLoading ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'}`} />
-                  <p className="text-sm text-gray-600">
+                  <div className={`h-2 w-2 rounded-full ${isLoading ? 'bg-yellow-500 dark:bg-yellow-400 animate-pulse' : 'bg-green-500 dark:bg-green-400'}`} />
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
                     {isLoading ? 'Processing...' : 'Ready to process'}
                   </p>
                 </div>
                 <Button 
                   onClick={handleSubmit} 
                   disabled={isLoading}
-                  className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-8 shadow-lg shadow-indigo-600/20 hover:shadow-indigo-600/30 transition-all duration-200"
+                  className="bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-500 dark:to-purple-500 hover:from-indigo-700 hover:to-purple-700 dark:hover:from-indigo-600 dark:hover:to-purple-600 text-white px-8 shadow-lg shadow-indigo-600/20 dark:shadow-indigo-900/30 hover:shadow-indigo-600/30 dark:hover:shadow-indigo-900/40 transition-all duration-200"
                   size="lg"
                 >
                   {isLoading ? (
@@ -287,10 +298,10 @@ export default function Home() {
 
           <div className="lg:sticky lg:top-8">
             {summary ? (
-              <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+              <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm dark:bg-gray-900/90 dark:backdrop-blur-xl dark:border-gray-800">
                 <CardHeader className="space-y-1 pb-4">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+                    <CardTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
                       {OUTPUT_FORMATS[outputFormat].icon} {OUTPUT_FORMATS[outputFormat].label}
                     </CardTitle>
                     <div className="flex items-center space-x-2">
@@ -342,11 +353,11 @@ export default function Home() {
                 </CardContent>
               </Card>
             ) : (
-              <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm bg-dot-pattern">
-                <CardContent className="min-h-[300px] flex items-center justify-center text-gray-500">
+              <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm dark:bg-gray-900/90 dark:backdrop-blur-xl dark:border-gray-800 bg-dot-pattern">
+                <CardContent className="min-h-[300px] flex items-center justify-center text-gray-500 dark:text-gray-400">
                   {isLoading ? (
                     <div className="flex flex-col items-center space-y-4">
-                      <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+                      <Loader2 className="h-8 w-8 animate-spin text-indigo-600 dark:text-indigo-400" />
                       <p>Processing your content...</p>
                     </div>
                   ) : (
@@ -359,8 +370,8 @@ export default function Home() {
         </div>
 
         <footer className="mt-16 text-center">
-          <div className="inline-flex items-center space-x-1 text-sm text-gray-500 bg-white/50 px-4 py-2 rounded-full">
-            <div className="h-1 w-1 rounded-full bg-indigo-500 animate-pulse" />
+          <div className="inline-flex items-center space-x-1 text-sm text-gray-500 dark:text-gray-400 bg-white/50 dark:bg-gray-900/50 px-4 py-2 rounded-full">
+            <div className="h-1 w-1 rounded-full bg-indigo-500 dark:bg-indigo-400 animate-pulse" />
             <p>Powered by advanced AI to extract what matters most</p>
           </div>
         </footer>

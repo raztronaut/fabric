@@ -36,39 +36,39 @@
   }
  
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 224 71% 4%;
+    --foreground: 213 31% 91%;
  
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 224 71% 4%;
+    --card-foreground: 213 31% 91%;
  
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 224 71% 4%;
+    --popover-foreground: 215 20.2% 65.1%;
  
     --primary: 210 40% 98%;
     --primary-foreground: 222.2 47.4% 11.2%;
  
-    --secondary: 217.2 32.6% 17.5%;
+    --secondary: 222.2 47.4% 11.2%;
     --secondary-foreground: 210 40% 98%;
  
-    --muted: 217.2 32.6% 17.5%;
+    --muted: 223 47% 11%;
     --muted-foreground: 215 20.2% 65.1%;
  
-    --accent: 217.2 32.6% 17.5%;
+    --accent: 216 34% 17%;
     --accent-foreground: 210 40% 98%;
  
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;
  
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --border: 216 34% 17%;
+    --input: 216 34% 17%;
+    --ring: 216 34% 17%;
   }
 }
 
 @layer base {
   * {
-    @apply border-neutral-200;
+    @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
@@ -76,7 +76,7 @@
 }
 
 .prose {
-  @apply text-gray-600;
+  @apply text-gray-600 dark:text-gray-300;
 }
 
 .prose p {
@@ -88,13 +88,113 @@
 }
 
 .prose li {
-  @apply text-gray-700;
+  @apply text-gray-700 dark:text-gray-300;
 }
 
 .prose strong {
-  @apply font-semibold text-gray-900;
+  @apply font-semibold text-gray-900 dark:text-gray-100;
 }
 
-.card-hover {
-  @apply transition-shadow duration-200 hover:shadow-lg;
+/* Dark mode background styles */
+.dark .bg-white\/80 {
+  @apply bg-gray-900/90 backdrop-blur-xl;
+}
+
+.dark .from-indigo-50 {
+  @apply from-indigo-950/50;
+}
+
+.dark .to-purple-50 {
+  @apply to-purple-950/50;
+}
+
+.dark .via-white {
+  @apply via-gray-900;
+}
+
+.dark .bg-purple-100\/50 {
+  @apply bg-purple-900/20;
+}
+
+.dark .bg-indigo-100\/50 {
+  @apply bg-indigo-900/20;
+}
+
+/* Card styles */
+.dark .card {
+  @apply border-gray-800 bg-gray-900/90 backdrop-blur-xl;
+}
+
+/* Input and form styles */
+.dark .textarea,
+.dark .input {
+  @apply bg-gray-800/50 border-gray-700;
+}
+
+/* Button styles */
+.dark .button {
+  @apply bg-gray-800 hover:bg-gray-700;
+}
+
+/* Tab styles */
+.dark .tabs {
+  @apply bg-gray-800/50;
+}
+
+.dark .tab {
+  @apply text-gray-400 hover:text-gray-200;
+}
+
+.dark .tab[data-state="active"] {
+  @apply bg-gray-900 text-gray-100;
+}
+
+/* Radio group styles */
+.dark .radio-item {
+  @apply border-gray-700 hover:border-gray-600 hover:bg-gray-800/50;
+}
+
+.dark .radio-item[data-state="checked"] {
+  @apply border-indigo-500 bg-gray-800/90;
+}
+
+/* Transitions */
+.transition-colors,
+.hover\:bg-gray-50,
+.dark .hover\:bg-gray-800 {
+  @apply transition-all duration-200;
+}
+
+/* Focus states */
+.dark .focus\:ring-gray-800:focus {
+  @apply ring-gray-700;
+}
+
+/* Shadows */
+.dark .shadow-lg {
+  @apply shadow-black/30;
+}
+
+/* Gradient text */
+.dark .text-gradient {
+  @apply bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent;
+}
+
+/* Status indicators */
+.dark .status-dot {
+  @apply bg-green-400;
+}
+
+.dark .status-dot.processing {
+  @apply bg-yellow-400;
+}
+
+/* Animations */
+@keyframes glow {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 0.4; }
+}
+
+.dark .animate-glow {
+  animation: glow 2s ease-in-out infinite;
 }
