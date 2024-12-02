@@ -61,8 +61,6 @@ Instructions:
 - Focus on practical, actionable insights
 - Highlight unexpected or counter-intuitive findings
 - Include relevant context when needed
-- Prioritize insights by importance
-- Make each takeaway meaningful and standalone
 - Maximum 5-7 key takeaways
 
 Format example:
@@ -96,8 +94,6 @@ Instructions:
 - Create 4-6 connected tweets
 - Maximum 280 characters per tweet
 - Number each tweet (1/x format)
-- Start with a hook
-- Each tweet should flow naturally to the next
 - Make each tweet valuable on its own
 - End with a strong conclusion
 - Use emojis strategically
@@ -110,6 +106,41 @@ Format example:
 
 Remember: The thread should tell a coherent story while making complex information accessible.`,
     maxTokens: 400,
+    temperature: 0.7
+  },
+  linkedin: {
+    system: `You are a LinkedIn content strategist. Your task is to create a professional, engaging post that drives meaningful engagement.
+
+Instructions:
+- Start with a powerful hook (question, statistic, or challenge)
+- Structure the post in 3-4 short, scannable paragraphs
+- Use LinkedIn-style formatting:
+  • Add line breaks between paragraphs
+  • Use emojis strategically (max 2-3)
+  • Include bullet points for key takeaways
+- Maintain a professional yet conversational tone
+- Include one relevant data point or statistic
+- End with either:
+  • A thought-provoking question
+  • A clear call-to-action
+  • An invitation for discussion
+- Add 3 relevant hashtags at the end
+- Keep under 1,300 characters
+- Format for mobile readability
+
+Example structure:
+[Attention-grabbing hook]
+
+[Context and main insight]
+
+[Key takeaways or practical application]
+
+[Engaging question or call-to-action]
+
+#[industry] #[topic] #[trend]
+
+Remember: Focus on providing professional value while encouraging meaningful discussion. Write in a first-person perspective to make it more authentic.`,
+    maxTokens: 350,
     temperature: 0.7
   }
 }
@@ -193,6 +224,13 @@ export async function POST(request: Request) {
       )
     }
 
+    if (!contentType || !['url', 'youtube', 'text'].includes(contentType)) {
+      return NextResponse.json(
+        { error: "Please select a valid content type" },
+        { status: 400 }
+      )
+    }
+
     if (!outputFormat || !OUTPUT_FORMATS[outputFormat as keyof typeof OUTPUT_FORMATS]) {
       return NextResponse.json(
         { error: "Please select a valid output format" },
@@ -202,22 +240,44 @@ export async function POST(request: Request) {
 
     let textToProcess = content
 
-    // Handle URLs
-    if (await isValidUrl(content)) {
+    // Process content based on type
+    if (contentType === 'url' || contentType === 'youtube') {
+      if (!await isValidUrl(content)) {
+        return NextResponse.json(
+          { error: "Please provide a valid URL" },
+          { status: 400 }
+        )
+      }
+
       const videoId = await getYoutubeVideoId(content)
       
+      if (contentType === 'youtube' && !videoId) {
+        return NextResponse.json(
+          { error: "Please provide a valid YouTube URL" },
+          { status: 400 }
+        )
+      }
+      
       if (videoId) {
-        // Handle YouTube video
         textToProcess = await fetchYoutubeTranscript(videoId)
       } else {
-        // Handle regular web page
         textToProcess = await fetchWebContent(content)
       }
     }
 
+    // Validate processed text
+    if (!textToProcess.trim()) {
+      return NextResponse.json(
+        { error: "No content could be extracted. Please check your input and try again." },
+        { status: 400 }
+      )
+    }
+
     // Truncate very long content to avoid token limits
-    if (textToProcess.length > 15000) {
-      textToProcess = textToProcess.slice(0, 15000) + '...'
+    const maxLength = 15000
+    if (textToProcess.length > maxLength) {
+      textToProcess = textToProcess.slice(0, maxLength) + '...'
+      console.log(`Content truncated from ${textToProcess.length} to ${maxLength} characters`)
     }
 
     const formatConfig = OUTPUT_FORMATS[outputFormat as keyof typeof OUTPUT_FORMATS]
@@ -236,23 +296,41 @@ export async function POST(request: Request) {
       ],
       temperature: formatConfig.temperature,
       max_tokens: formatConfig.maxTokens,
+      presence_penalty: 0.1, // Slightly encourage new topics
+      frequency_penalty: 0.1, // Slightly discourage repetition
     })
 
     const processedContent = completion.choices[0].message.content
 
+    if (!processedContent) {
+      throw new Error("Failed to generate content. Please try again.")
+    }
+
     return NextResponse.json({ 
       summary: processedContent,
       format: outputFormat,
-      contentLength: textToProcess.length
+      contentLength: textToProcess.length,
+      truncated: textToProcess.length > maxLength
     })
   } catch (error) {
     console.error("Processing error:", error)
+    
+    // Handle specific error types
+    if (error instanceof Error) {
+      if (error.message.includes('API key')) {
+        return NextResponse.json(
+          { error: "Server configuration error. Please try again later." },
+          { status: 500 }
+        )
+      }
+      return NextResponse.json(
+        { error: error.message },
+        { status: 500 }
+      )
+    }
+    
     return NextResponse.json(
-      { 
-        error: error instanceof Error 
-          ? error.message 
-          : "Failed to process content. Please try again."
-      },
+      { error: "Failed to process content. Please try again." },
       { status: 500 }
     )
   }

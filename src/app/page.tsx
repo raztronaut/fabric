@@ -7,9 +7,11 @@ import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
+import { useToast } from "@/hooks/use-toast"
+import { Loader2, Copy, Check, Share2 } from "lucide-react"
 
 type ContentType = 'url' | 'youtube' | 'text'
-type OutputFormat = 'summary' | 'bullets' | 'takeaways' | 'tweet' | 'thread'
+type OutputFormat = 'summary' | 'bullets' | 'takeaways' | 'tweet' | 'thread' | 'linkedin'
 
 const OUTPUT_FORMATS = {
   summary: {
@@ -36,6 +38,11 @@ const OUTPUT_FORMATS = {
     label: 'Twitter Thread',
     description: 'A series of connected tweets',
     icon: '🧵'
+  },
+  linkedin: {
+    label: 'LinkedIn Post',
+    description: 'Professional post optimized for LinkedIn engagement',
+    icon: '💼'
   }
 }
 
@@ -43,18 +50,57 @@ export default function Home() {
   const [content, setContent] = useState("")
   const [summary, setSummary] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
   const [contentType, setContentType] = useState<ContentType>('url')
   const [outputFormat, setOutputFormat] = useState<OutputFormat>('summary')
+  const [isCopied, setIsCopied] = useState(false)
+  const { toast } = useToast()
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(summary)
+      setIsCopied(true)
+      toast({
+        title: "Copied!",
+        description: "Content copied to clipboard",
+        variant: "success",
+      })
+      setTimeout(() => setIsCopied(false), 2000)
+    } catch (err) {
+      toast({
+        title: "Failed to copy",
+        description: "Please try again",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const getCharacterCount = () => {
+    if (!summary) return 0
+    return summary.length
+  }
+
+  const getCharacterLimit = () => {
+    switch (outputFormat) {
+      case 'tweet':
+        return 280
+      case 'linkedin':
+        return 1300
+      default:
+        return null
+    }
+  }
 
   const handleSubmit = async () => {
     if (!content.trim()) {
-      setError("Please enter content to distill")
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please enter content to distill",
+      })
       return
     }
 
     setIsLoading(true)
-    setError("")
     setSummary("")
 
     try {
@@ -77,10 +123,31 @@ export default function Home() {
       }
 
       setSummary(data.summary)
+      toast({
+        variant: "success",
+        title: "Success",
+        description: "Content successfully distilled!",
+      })
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred")
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: err instanceof Error ? err.message : "An error occurred",
+      })
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleShare = async () => {
+    if (outputFormat === 'linkedin') {
+      const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(summary)}`
+      window.open(linkedInUrl, '_blank')
+      toast({
+        title: "Opening LinkedIn",
+        description: "Ready to share your post",
+        variant: "success",
+      })
     }
   }
 
@@ -194,9 +261,9 @@ export default function Home() {
               </CardContent>
               <CardFooter className="flex justify-between items-center border-t bg-gradient-to-b from-white/50 to-gray-50/50 rounded-b-lg pt-6">
                 <div className="flex items-center space-x-2">
-                  <div className="h-2 w-2 rounded-full bg-green-500" />
+                  <div className={`h-2 w-2 rounded-full ${isLoading ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'}`} />
                   <p className="text-sm text-gray-600">
-                    Ready to process
+                    {isLoading ? 'Processing...' : 'Ready to process'}
                   </p>
                 </div>
                 <Button 
@@ -207,10 +274,7 @@ export default function Home() {
                 >
                   {isLoading ? (
                     <>
-                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                      </svg>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Distilling...
                     </>
                   ) : (
@@ -222,29 +286,49 @@ export default function Home() {
           </div>
 
           <div className="lg:sticky lg:top-8">
-            {error && (
-              <div className="rounded-lg bg-red-50 border border-red-100 p-4 mb-8 animate-in slide-in-from-top-2">
-                <div className="flex">
-                  <div className="flex-shrink-0">
-                    <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm text-red-700">{error}</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
             {summary ? (
               <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
                 <CardHeader className="space-y-1 pb-4">
-                  <CardTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
-                    {OUTPUT_FORMATS[outputFormat].icon} {OUTPUT_FORMATS[outputFormat].label}
-                  </CardTitle>
-                  <CardDescription>
-                    Here's your distilled content
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+                      {OUTPUT_FORMATS[outputFormat].icon} {OUTPUT_FORMATS[outputFormat].label}
+                    </CardTitle>
+                    <div className="flex items-center space-x-2">
+                      {outputFormat === 'linkedin' && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={handleShare}
+                          className="h-8 w-8"
+                        >
+                          <Share2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleCopy}
+                        className="h-8 w-8"
+                      >
+                        {isCopied ? (
+                          <Check className="h-4 w-4 text-green-600" />
+                        ) : (
+                          <Copy className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                  <CardDescription className="flex items-center justify-between">
+                    <span>Here's your distilled content</span>
+                    {getCharacterLimit() && (
+                      <span className={`text-sm ${
+                        getCharacterCount() > getCharacterLimit()! 
+                          ? 'text-red-500' 
+                          : 'text-gray-500'
+                      }`}>
+                        {getCharacterCount()}/{getCharacterLimit()} characters
+                      </span>
+                    )}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -260,7 +344,14 @@ export default function Home() {
             ) : (
               <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm bg-dot-pattern">
                 <CardContent className="min-h-[300px] flex items-center justify-center text-gray-500">
-                  Your distilled content will appear here
+                  {isLoading ? (
+                    <div className="flex flex-col items-center space-y-4">
+                      <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+                      <p>Processing your content...</p>
+                    </div>
+                  ) : (
+                    "Your distilled content will appear here"
+                  )}
                 </CardContent>
               </Card>
             )}
