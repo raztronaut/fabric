@@ -15,17 +15,17 @@ async function getYoutubeVideoId(url: string) {
     } else if (urlObj.hostname.includes('youtu.be')) {
       return urlObj.pathname.slice(1)
     }
-  } catch (error) {
+    return null
+  } catch {
     return null
   }
-  return null
 }
 
 async function fetchYoutubeTranscript(videoId: string) {
   try {
     const transcript = await YoutubeTranscript.fetchTranscript(videoId)
     return transcript.map(item => item.text).join(' ')
-  } catch (error) {
+  } catch {
     throw new Error('Failed to fetch YouTube transcript')
   }
 }
@@ -48,7 +48,7 @@ async function fetchWebContent(url: string) {
                    document.body
     
     return article.textContent.trim().replace(/\s+/g, ' ')
-  } catch (error) {
+  } catch {
     throw new Error('Failed to fetch web content')
   }
 }
@@ -57,7 +57,7 @@ async function isValidUrl(str: string) {
   try {
     new URL(str)
     return true
-  } catch (error) {
+  } catch {
     return false
   }
 }
