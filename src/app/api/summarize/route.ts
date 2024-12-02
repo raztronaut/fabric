@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server"
 import OpenAI from "openai"
 import { YoutubeTranscript } from 'youtube-transcript'
-import { JSDOM } from 'jsdom'
 
 export const runtime = 'nodejs'
 
@@ -39,37 +38,21 @@ async function fetchYoutubeTranscript(videoId: string) {
 async function fetchWebContent(url: string) {
   try {
     const response = await fetch(url)
-    const html = await response.text()
-    const dom = new JSDOM(html)
-    const document = dom.window.document
+    const text = await response.text()
     
-    // Remove script and style elements
-    document.querySelectorAll('script, style').forEach(el => el.remove())
+    // Simple HTML to text conversion
+    const cleanText = text
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove scripts
+      .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '') // Remove styles
+      .replace(/<[^>]+>/g, ' ') // Remove HTML tags
+      .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+      .trim()
     
-    // Get main content (prioritize article or main content)
-    let mainContent: Element | null = null
-    
-    // Try to find the main content in order of preference
-    const selectors = ['article', 'main', '.content', '.article']
-    for (const selector of selectors) {
-      mainContent = document.querySelector(selector)
-      if (mainContent) break
+    if (!cleanText) {
+      throw new Error('No content found in the webpage')
     }
     
-    // Fallback to body if no other content is found
-    mainContent = mainContent || document.body
-    
-    if (!mainContent) {
-      throw new Error('Could not find content in the webpage')
-    }
-    
-    // Extract and clean the text content
-    const textContent = mainContent.textContent
-    if (!textContent) {
-      throw new Error('No text content found in the webpage')
-    }
-    
-    return textContent.trim().replace(/\s+/g, ' ')
+    return cleanText
   } catch (error) {
     if (error instanceof Error) {
       throw error
