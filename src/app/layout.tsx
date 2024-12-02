@@ -5,8 +5,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Fabric Summarizer",
-  description: "Create concise summaries of articles, documents, and YouTube videos",
+  title: "Distill | AI-Powered Content Intelligence",
+  description: "Transform lengthy content into clear, actionable insights. From articles to videos, get to the essence in seconds.",
 };
 
 export default function RootLayout({
@@ -15,9 +15,9 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className="antialiased">
       <body className={inter.className}>
-        <main className="min-h-screen bg-gray-50">
+        <main className="min-h-screen">
           {children}
         </main>
       </body>

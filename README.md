@@ -1,28 +1,31 @@
-# Fabric Summarizer
+# Distill
 
-A web application that uses Fabric's summarization pattern to create concise versions of articles, documents, and YouTube videos.
+Transform lengthy content into clear, actionable insights. Distill uses advanced AI to extract what matters most from articles, videos, and documents.
 
 ## Features
 
-- Summarize articles and documents by pasting content
-- Support for YouTube video transcripts
-- Support for web article URLs
-- Clean and modern UI using Tailwind CSS
-- Powered by OpenAI's GPT-4 model
-- Responsive design for all devices
+- **Smart Content Processing**: Automatically handles web articles, YouTube videos, and direct text
+- **AI-Powered Analysis**: Leverages GPT-4 for intelligent content understanding
+- **Clean Interface**: Modern, responsive design with intuitive controls
+- **Instant Results**: Get key insights in seconds
+- **Universal Support**: Works with any text content, web articles, or YouTube videos
 
-## Prerequisites
+## Technology
 
-- Node.js 18+ and npm
-- OpenAI API key
+- Next.js 14 with App Router
+- TypeScript for reliability
+- Tailwind CSS for styling
+- Shadcn UI components
+- OpenAI GPT-4 API
+- YouTube transcript extraction
 
-## Setup
+## Getting Started
 
 1. Clone the repository:
 
 ```bash
 git clone <repository-url>
-cd fabric
+cd distill
 ```
 
 2. Install dependencies:
@@ -31,51 +34,34 @@ cd fabric
 npm install
 ```
 
-3. Create a `.env.local` file in the root directory and add your OpenAI API key:
+3. Set up your environment:
+   - Create a `.env.local` file
+   - Add your OpenAI API key:
 
 ```
 OPENAI_API_KEY=your_api_key_here
 ```
 
-4. Run the development server:
+4. Start the development server:
 
 ```bash
 npm run dev
 ```
 
-5. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+5. Open [http://localhost:3000](http://localhost:3000) to view the application
 
-## Deployment on Vercel
+## Deployment
 
-The easiest way to deploy this application is to use the Vercel Platform.
+Deploy on Vercel for the best experience:
 
-1. Push your code to a Git repository (GitHub, GitLab, or Bitbucket)
+1. Push your code to GitHub
+2. Import your repository at [vercel.com/new](https://vercel.com/new)
+3. Add your `OPENAI_API_KEY` in the environment variables
+4. Deploy!
 
-2. Import your project to Vercel:
-   - Go to [https://vercel.com/new](https://vercel.com/new)
-   - Choose your Git repository
-   - Click "Import"
+## Contributing
 
-3. Configure the project:
-   - Add your environment variables:
-     - `OPENAI_API_KEY`: Your OpenAI API key
-   - Click "Deploy"
-
-4. Your application will be deployed to a URL like: `https://your-project.vercel.app`
-
-## Environment Variables
-
-The following environment variables are required:
-
-- `OPENAI_API_KEY`: Your OpenAI API key for the summarization functionality
-
-## Technology Stack
-
-- Next.js 14
-- TypeScript
-- Tailwind CSS
-- Shadcn UI
-- OpenAI API
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
