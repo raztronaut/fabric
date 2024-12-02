@@ -9,6 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { Loader2, Copy, Check, Share2 } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 type ContentType = 'url' | 'youtube' | 'text'
 type OutputFormat = 'summary' | 'bullets' | 'takeaways' | 'tweet' | 'thread' | 'linkedin'
@@ -53,6 +54,8 @@ export default function Home() {
   const [contentType, setContentType] = useState<ContentType>('url')
   const [outputFormat, setOutputFormat] = useState<OutputFormat>('summary')
   const [isCopied, setIsCopied] = useState(false)
+  const [showPreview, setShowPreview] = useState(false)
+  const [hashtags, setHashtags] = useState<string>("")
   const { toast } = useToast()
 
   const handleCopy = async () => {
@@ -90,6 +93,20 @@ export default function Home() {
     }
   }
 
+  const getInputCharacterCount = () => {
+    if (!content) return 0
+    return content.length
+  }
+
+  const getInputCharacterLimit = () => {
+    switch (contentType) {
+      case 'text':
+        return 25000 // Reasonable limit for direct text input
+      default:
+        return null
+    }
+  }
+
   const handleSubmit = async () => {
     if (!content.trim()) {
       toast({
@@ -102,6 +119,7 @@ export default function Home() {
 
     setIsLoading(true)
     setSummary("")
+    setHashtags("")
 
     try {
       const response = await fetch("/api/summarize", {
@@ -123,6 +141,10 @@ export default function Home() {
       }
 
       setSummary(data.summary)
+      if (data.hashtags) {
+        setHashtags(data.hashtags)
+      }
+      
       toast({
         variant: "success",
         title: "Success",
@@ -149,6 +171,61 @@ export default function Home() {
         variant: "success",
       })
     }
+  }
+
+  const renderPreview = () => {
+    if (!summary || !['linkedin', 'tweet', 'thread'].includes(outputFormat)) return null
+
+    return (
+      <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm mt-4">
+        <CardHeader>
+          <CardTitle className="text-lg">Preview</CardTitle>
+          <CardDescription>
+            How your post will look on {
+              outputFormat === 'linkedin' ? 'LinkedIn' :
+              outputFormat === 'tweet' ? 'Twitter' : 'Twitter Thread'
+            }
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className={cn(
+            "rounded-lg border p-4 bg-white",
+            outputFormat === 'linkedin' ? 'prose max-w-none' : 'font-sans'
+          )}>
+            {outputFormat === 'linkedin' ? (
+              <div className="space-y-4">
+                {summary.split('\n\n').map((paragraph, i) => (
+                  <p key={i} className="text-gray-800">{paragraph}</p>
+                ))}
+                {hashtags && (
+                  <div className="pt-4 border-t">
+                    <p className="text-gray-600 text-sm">
+                      {hashtags.split(' ').map((tag, i) => (
+                        <span key={i} className="inline-block bg-gray-100 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2">
+                          {tag}
+                        </span>
+                      ))}
+                    </p>
+                  </div>
+                )}
+              </div>
+            ) : outputFormat === 'tweet' ? (
+              <div className="font-sans text-gray-800">
+                {summary}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {summary.split('\n').map((tweet, i) => (
+                  <div key={i} className="pb-4 border-b last:border-0">
+                    {tweet}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    )
   }
 
   return (
@@ -214,7 +291,19 @@ export default function Home() {
                   </TabsContent>
                   <TabsContent value="text" className="mt-0">
                     <div className="space-y-2">
-                      <p className="text-sm text-gray-600">Paste or type any text content</p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm text-gray-600">Paste or type any text content</p>
+                        {getInputCharacterLimit() && (
+                          <span className={cn(
+                            "text-sm",
+                            getInputCharacterCount() > getInputCharacterLimit()! 
+                              ? "text-red-500" 
+                              : "text-gray-500"
+                          )}>
+                            {getInputCharacterCount()}/{getInputCharacterLimit()} characters
+                          </span>
+                        )}
+                      </div>
                       <Textarea
                         placeholder="Enter your text here..."
                         value={content}
@@ -285,62 +374,65 @@ export default function Home() {
             </Card>
           </div>
 
-          <div className="lg:sticky lg:top-8">
+          <div className="lg:sticky lg:top-8 space-y-6">
             {summary ? (
-              <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
-                <CardHeader className="space-y-1 pb-4">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
-                      {OUTPUT_FORMATS[outputFormat].icon} {OUTPUT_FORMATS[outputFormat].label}
-                    </CardTitle>
-                    <div className="flex items-center space-x-2">
-                      {outputFormat === 'linkedin' && (
+              <>
+                <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+                  <CardHeader className="space-y-1 pb-4">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+                        {OUTPUT_FORMATS[outputFormat].icon} {OUTPUT_FORMATS[outputFormat].label}
+                      </CardTitle>
+                      <div className="flex items-center space-x-2">
+                        {outputFormat === 'linkedin' && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={handleShare}
+                            className="h-8 w-8"
+                          >
+                            <Share2 className="h-4 w-4" />
+                          </Button>
+                        )}
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={handleShare}
+                          onClick={handleCopy}
                           className="h-8 w-8"
                         >
-                          <Share2 className="h-4 w-4" />
+                          {isCopied ? (
+                            <Check className="h-4 w-4 text-green-600" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
                         </Button>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={handleCopy}
-                        className="h-8 w-8"
-                      >
-                        {isCopied ? (
-                          <Check className="h-4 w-4 text-green-600" />
-                        ) : (
-                          <Copy className="h-4 w-4" />
-                        )}
-                      </Button>
+                      </div>
                     </div>
-                  </div>
-                  <CardDescription className="flex items-center justify-between">
-                    <span>Here's your distilled content</span>
-                    {getCharacterLimit() && (
-                      <span className={`text-sm ${
-                        getCharacterCount() > getCharacterLimit()! 
-                          ? 'text-red-500' 
-                          : 'text-gray-500'
-                      }`}>
-                        {getCharacterCount()}/{getCharacterLimit()} characters
-                      </span>
-                    )}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="prose prose-gray max-w-none">
-                    {summary.split("\n").map((line, index) => (
-                      <p key={index} className="mb-4 last:mb-0 text-gray-700 animate-in slide-in-from-right-1" style={{ animationDelay: `${index * 100}ms` }}>
-                        {line}
-                      </p>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+                    <CardDescription className="flex items-center justify-between">
+                      <span>Here's your distilled content</span>
+                      {getCharacterLimit() && (
+                        <span className={`text-sm ${
+                          getCharacterCount() > getCharacterLimit()! 
+                            ? 'text-red-500' 
+                            : 'text-gray-500'
+                        }`}>
+                          {getCharacterCount()}/{getCharacterLimit()} characters
+                        </span>
+                      )}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="prose prose-gray max-w-none">
+                      {summary.split("\n").map((line, index) => (
+                        <p key={index} className="mb-4 last:mb-0 text-gray-700 animate-in slide-in-from-right-1" style={{ animationDelay: `${index * 100}ms` }}>
+                          {line}
+                        </p>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+                {renderPreview()}
+              </>
             ) : (
               <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm bg-dot-pattern">
                 <CardContent className="min-h-[300px] flex items-center justify-center text-gray-500">

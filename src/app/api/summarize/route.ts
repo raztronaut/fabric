@@ -145,6 +145,45 @@ Remember: Focus on providing professional value while encouraging meaningful dis
   }
 }
 
+// Add hashtag categories
+const HASHTAG_CATEGORIES = {
+  technology: ['tech', 'innovation', 'digital', 'future', 'ai', 'machinelearning', 'data', 'programming'],
+  business: ['business', 'entrepreneurship', 'leadership', 'management', 'startup', 'success', 'growth'],
+  career: ['career', 'jobs', 'hiring', 'work', 'productivity', 'personaldevelopment', 'networking'],
+  marketing: ['marketing', 'socialmedia', 'branding', 'digitalmarketing', 'content', 'strategy'],
+  industry: ['fintech', 'healthtech', 'edtech', 'sustainability', 'blockchain', 'cybersecurity']
+} as const
+
+async function suggestHashtags(content: string) {
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [
+        {
+          role: "system",
+          content: `You are a LinkedIn hashtag expert. Analyze the content and suggest 3 relevant hashtags from these categories:
+${Object.entries(HASHTAG_CATEGORIES).map(([category, tags]) => 
+  `${category}: ${tags.map(tag => '#' + tag).join(', ')}`
+).join('\n')}
+
+Return only the hashtags, separated by spaces, no other text.`
+        },
+        {
+          role: "user",
+          content
+        }
+      ],
+      temperature: 0.3,
+      max_tokens: 50,
+    })
+
+    return completion.choices[0].message.content?.trim() || ''
+  } catch (error) {
+    console.error('Error suggesting hashtags:', error)
+    return ''
+  }
+}
+
 async function getYoutubeVideoId(url: string) {
   try {
     const urlObj = new URL(url)
@@ -306,11 +345,18 @@ export async function POST(request: Request) {
       throw new Error("Failed to generate content. Please try again.")
     }
 
+    // Get hashtag suggestions for LinkedIn posts
+    let hashtags = ''
+    if (outputFormat === 'linkedin') {
+      hashtags = await suggestHashtags(textToProcess)
+    }
+
     return NextResponse.json({ 
       summary: processedContent,
       format: outputFormat,
       contentLength: textToProcess.length,
-      truncated: textToProcess.length > maxLength
+      truncated: textToProcess.length > maxLength,
+      hashtags: hashtags || undefined
     })
   } catch (error) {
     console.error("Processing error:", error)
